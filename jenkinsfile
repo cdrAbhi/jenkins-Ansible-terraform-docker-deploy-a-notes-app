@@ -1,0 +1,29 @@
+pipeline {
+    agent {
+        label 'ubuntu' // The Jenkins agent where Ansible is installed
+    }
+
+    environment {
+        ANSIBLE_PLAYBOOK = '~/playbook/deploy-web.yml'  // The playbook path on worker server to run
+     }
+
+    stages {
+        stage('Run Ansible Playbook') {
+            steps {
+                // Run the Ansible playbook to update the web app
+                sh """
+                ansible-playbook ${ANSIBLE_PLAYBOOK}
+                """
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Deployment completed successfully!'
+        }
+        failure {
+            echo 'Deployment failed!'
+        }
+    }
+}
