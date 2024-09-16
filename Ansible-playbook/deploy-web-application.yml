@@ -1,0 +1,39 @@
+---
+- name: Deploy Django Notes App with Docker Compose v2
+  hosts: servers
+  become: yes
+  vars:
+    app_dir: /var/www/django-notes-app
+    repo_url: https://github.com/LondheShubham153/django-notes-app.git   
+  tasks:    
+    - name: Ensure Docker service is started and enabled
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Install Git
+      apt:
+        name: git
+        state: present
+
+    - name: Ensure application directory exists
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Clone the latest code from repository
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ app_dir }}"
+        version: main
+        force: yes
+
+    - name: Build and start Docker containers using Docker Compose v2
+      command: docker compose up -d --build
+      args:
+        chdir: "{{ app_dir }}"
+
+    - name: Verify that the Docker containers are running
+      command: docker ps
