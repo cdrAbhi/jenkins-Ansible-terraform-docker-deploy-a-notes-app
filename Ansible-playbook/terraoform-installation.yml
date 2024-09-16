@@ -1,0 +1,43 @@
+---
+- name: Install Terraform on the Local Server
+  hosts: localhost
+  become: yes
+  tasks:
+    - name: Update APT package index
+      apt:
+        update_cache: yes
+
+    - name: Install required packages
+      apt:
+        name:
+          - gnupg
+          - software-properties-common
+          - curl
+        state: present
+
+    - name: Add HashiCorp GPG key
+      apt_key:
+        url: https://apt.releases.hashicorp.com/gpg
+        state: present
+
+    - name: Add HashiCorp APT repository
+      apt_repository:
+        repo: deb [arch=amd64] https://apt.releases.hashicorp.com {{ ansible_facts['lsb']['codename'] }} main
+        state: present
+
+    - name: Update APT package index again after adding the HashiCorp repository
+      apt:
+        update_cache: yes
+
+    - name: Install Terraform
+      apt:
+        name: terraform
+        state: present
+
+    - name: Verify Terraform installation
+      command: terraform version
+      register: terraform_version
+
+    - name: Display Terraform version
+      debug:
+        msg: "Terraform version: {{ terraform_version.stdout }}"
